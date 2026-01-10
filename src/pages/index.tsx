@@ -1,14 +1,14 @@
+// src/pages/index.tsx
 import type { GetStaticProps, InferGetStaticPropsType } from "next";
 import { MainLayout } from "@/components/layout/rootLayout";
 import { HomeStream } from "@/components/home/homeStream";
 import type { HomeStreamVM } from "@/lib/home/modules";
 import { getBaseUrl } from "@/lib/utils/baseUrl";
-import { marketToCard } from "@/lib//gammaMap";
+import { marketToCard } from "@/lib/gammaMap";
 
 type Props = { vm: HomeStreamVM };
 
 export default function HomePage({ vm }: InferGetStaticPropsType<typeof getStaticProps>) {
-  // console.log("vm", vm.right)
   return (
     <MainLayout>
       <HomeStream vm={vm} />
@@ -22,7 +22,6 @@ async function fetchJson<T>(url: string): Promise<T> {
   return (await r.json()) as T;
 }
 
-// removes all undefined recursively (Next serialization-safe)
 function jsonSafe<T>(value: T): T {
   return JSON.parse(JSON.stringify(value));
 }
@@ -46,14 +45,6 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
   const spo = (sports.markets ?? []).map((m: any) => marketToCard(m, { category: "Sports" }));
   const ent = (entertainment.markets ?? []).map((m: any) => marketToCard(m, { category: "Entertainment" }));
 
-
-// console.log("geo", geo)
-// console.log("eco", eco)
-// console.log("spo", spo)
-// console.log("ent", ent)
-
-
-  // Left stream: mix topic blocks + breaks (like NYT does)
   const vm: HomeStreamVM = {
     updatedAt: home.updatedAt ?? new Date().toISOString(),
     right: {
@@ -71,7 +62,6 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         },
       },
       { type: "divider", label: "Top developments" },
-
       {
         type: "topic",
         title: "Geopolitics",
@@ -85,10 +75,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         right: geo.slice(4, 8),
         bottom: geo.slice(8, 10),
       },
-
-      // Break component to avoid repetitive blocks
       { type: "split", left: movers[3] ?? trending[5], right: movers[4] ?? trending[6] },
-
       {
         type: "topic",
         title: "Economy",
@@ -102,22 +89,20 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         right: eco.slice(4, 8),
         bottom: eco.slice(8, 10),
       },
-
-      // Another break: a compact “ticker” list
       { type: "ticker", title: "Fast movers", items: movers.slice(0, 6) },
-
-      // You can keep adding “headline clusters” without turning them into categories
       {
         type: "topic",
         title: "Watchlist",
-        tabs: [{ label: "Close to resolution", href: "#" }, { label: "High volume", href: "#" }],
+        tabs: [
+          { label: "Close to resolution", href: "#" },
+          { label: "High volume", href: "#" },
+        ],
         left: trending.slice(0, 3),
         featured: trending[3] ?? null,
         right: trending.slice(4, 8),
         bottom: trending.slice(8, 10),
       },
     ],
-    // Lower categories “only way down”
     lower: [
       {
         type: "categoryGrid",
@@ -135,6 +120,6 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
 
   return {
     props: jsonSafe({ vm }),
-    revalidate: 5 ,
+    revalidate: 5,
   };
 };

@@ -7,9 +7,11 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   return (
+    <div className="font-ui">
     <div className="min-h-screen flex flex-col">
       <SiteHeader />
       <main className="flex-1">{children}</main>
+    </div>
     </div>
   )
 }

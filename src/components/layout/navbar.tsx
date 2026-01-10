@@ -36,7 +36,7 @@ export function SiteHeader() {
   return (
     <header className="w-full border-b border-border">
       {/* Top Bar */}
-      <div className="max-w-[1285px] mx-auto px-4">
+      <div className="max-w-[1285px] mx-auto pt-5 px-4">
         <div className="flex items-center justify-between py-2">
           {/* Left: Search & Language */}
           <div className="flex items-center gap-4">

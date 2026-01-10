@@ -1,8 +1,7 @@
-// src/lib/polymarket/normalize.ts
-import type { GammaMarket } from "./gammaTypes";
-import type { MarketCard } from "./frontpageTypes";
-import { inferBucket, pickEvent } from "./routing";
+import { GammaMarket } from "../polymarket/gammaTypes"
+import { inferBucket, pickEvent } from "./routing"
 
+// src/lib/polymarket/normalize.ts
 function parseOutcomePrices(outcomePrices?: string | null): number[] | null {
   if (!outcomePrices) return null;
   try {
@@ -15,7 +14,7 @@ function parseOutcomePrices(outcomePrices?: string | null): number[] | null {
   }
 }
 
-export function marketToCard(m: GammaMarket): MarketCard | null {
+export function marketToCard(m: GammaMarket): MarketCarc | null {
   const slug = m.slug ?? "";
   const title = (m.question ?? "").trim();
   if (!m.id || !slug || !title) return null;

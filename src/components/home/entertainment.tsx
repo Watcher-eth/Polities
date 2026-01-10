@@ -1,4 +1,4 @@
-import Image from "next/image";
+// src/components/home/entertainment.tsx
 import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { CardVM } from "@/lib/homeVm";
@@ -8,6 +8,14 @@ type Props = {
   featured: CardVM;
   items: CardVM[];
 };
+
+function Img({ src, alt, className }: { src: string; alt: string; className: string }) {
+  return (
+    <div className={`relative overflow-hidden rounded-md bg-muted ${className}`}>
+      <img src={src} alt={alt} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+    </div>
+  );
+}
 
 export function EntertainmentCarousel({ title, featured, items }: Props) {
   return (
@@ -19,49 +27,33 @@ export function EntertainmentCarousel({ title, featured, items }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Featured */}
         <div className="lg:col-span-6">
-          {featured.imageUrl && (
-            <div className="relative">
-              <img
-                src={featured.imageUrl}
-                alt={featured.title}
-                width={600}
-                height={400}
-                className="w-full h-auto"
-              />
-              {featured.imageCaption && (
-                <p className="text-xs text-muted-foreground mt-1 text-right">{featured.imageCaption}</p>
-              )}
-            </div>
-          )}
-          <h3 className="font-headline font-bold text-xl md:text-2xl leading-tight mt-4">
+          {featured.image ? <Img src={featured.image} alt={featured.title} className="w-full aspect-[4/3]" /> : null}
+
+          <h3 className="font-headline font-bold text-xl md:text-2xl leading-tight mt-4 line-clamp-3">
             <Link href={featured.href} className="hover:underline">
               {featured.title}
             </Link>
           </h3>
-          {featured.description && <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{featured.description}</p>}
-          {featured.readTime && <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block">{featured.readTime}</span>}
+
+          {featured.endDate ? (
+            <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
+              Ends {new Date(featured.endDate).toLocaleDateString()}
+            </span>
+          ) : null}
         </div>
 
         {/* Items */}
         <div className="lg:col-span-6">
           <div className="grid grid-cols-2 gap-4">
             {items.map((a, i) => (
-              <div key={i}>
-                {a.imageUrl && (
-                  <img
-                    src={a.imageUrl}
-                    alt={a.title}
-                    width={240}
-                    height={180}
-                    className="w-full h-40 object-cover"
-                  />
-                )}
-                <h4 className="font-headline font-bold text-base leading-tight mt-3">
+              <div key={a.id ?? i}>
+                {a.image ? <Img src={a.image} alt={a.title} className="w-full aspect-[4/3]" /> : null}
+
+                <h4 className="font-headline font-bold text-base leading-tight mt-3 line-clamp-3">
                   <Link href={a.href} className="hover:underline">
                     {a.title}
                   </Link>
                 </h4>
-                {a.readTime && <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block">{a.readTime}</span>}
               </div>
             ))}
           </div>

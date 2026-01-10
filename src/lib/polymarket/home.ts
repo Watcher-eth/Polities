@@ -1,16 +1,17 @@
-import { collapseByParent, diversify } from "@/lib/polymarket/div";
-import { scoreTrending, scoreMover, type Market } from "@/lib/polymarket/rank";
+import {  diversify } from "@/lib/polymarket/div";
+import { scoreTrending, scoreMover,  } from "@/lib/polymarket/rank";
+import { GammaMarket } from "./gammaTypes"
 
-function sortByScore(list: Market[], score: (m: Market) => number) {
+function sortByScore(list: GammaMarket[], score: (m: GammaMarket) => number) {
   return [...list].sort((a, b) => score(b) - score(a));
 }
 
-function categoryOf(m: Market) {
+function categoryOf(m: GammaMarket) {
   return String(m.category ?? "other").toLowerCase();
 }
 
 // ✅ Use your typed field (no events[] needed)
-function parentKey(m: Market) {
+function parentKey(m: GammaMarket) {
   // Prefer eventId if present; fall back to conditionId; fall back to slug
   return (
     (m.eventId != null ? String(m.eventId) : null) ??
@@ -19,7 +20,7 @@ function parentKey(m: Market) {
   );
 }
 
-export function buildTrending(list: Market[], n: number) {
+export function buildTrending(list: GammaMarket[], n: number) {
   const sorted = sortByScore(list, scoreTrending);
   const collapsed = collapseByParent(sorted, parentKey, scoreTrending);
 
