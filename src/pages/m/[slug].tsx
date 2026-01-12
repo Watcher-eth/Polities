@@ -1,4 +1,4 @@
-// src/pages/a/[slug].tsx
+// src/pages/m/[slug].tsx
 import type { GetStaticPaths, GetStaticProps, InferGetStaticPropsType } from "next";
 import { MainLayout } from "@/components/layout/rootLayout";
 import { ArticlePage } from "@/components/article";

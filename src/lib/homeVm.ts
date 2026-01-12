@@ -5,6 +5,7 @@ export type CardVM = {
   id: string; // stable key (market id)
   title: string;
   href: string;
+  
 
   // ✅ what your UI actually uses
   description?: string | null;

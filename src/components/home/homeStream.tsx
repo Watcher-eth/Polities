@@ -1,15 +1,19 @@
 // src/components/home/homeStream.tsx
 import * as React from "react";
+import Link from "next/link";
 import type { HomeStreamVM, LeftModule, LowerSection } from "@/lib/home/modules";
 import { ArticleCard } from "@/components/home/article";
 import { SectionHeader } from "@/components/home/sectionHeader";
 import { EntertainmentCarousel } from "@/components/home/entertainment";
-import Link from "next/link";
 
 function Divider({ label }: { label?: string | null }) {
   return (
     <div className="border-t border-border pt-6">
-      {label ? <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</div> : null}
+      {label ? (
+        <div className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+          {label}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -30,7 +34,20 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
                   {a?.title ?? ""}
                 </Link>
               </h3>
-              {a?.endDate ? <span className="text-[11px] text-muted-foreground uppercase tracking-wider mt-2 block">{a.endDate}</span> : null}
+
+              {/* NYT-style dek */}
+              {a?.description ? (
+                <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-3">
+                  {a.description}
+                </p>
+              ) : null}
+
+              {/* Read-time/date label */}
+              {a?.endDate ? (
+                <span className="text-[11px] text-muted-foreground uppercase tracking-wider mt-2 block">
+                  {a.endDate}
+                </span>
+              ) : null}
             </div>
           ))}
         </div>
@@ -38,9 +55,18 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
         {/* Center lead */}
         <div className="lg:col-span-6">
           {lead.imageUrl ? (
-            <div className="relative overflow-hidden bg-muted">
-              <img src={lead.imageUrl} alt={lead.title} className="w-full h-auto object-cover" />
-            </div>
+            <figure className="border border-border">
+              <div className="relative overflow-hidden bg-muted">
+                <img
+                  src={lead.imageUrl}
+                  alt={lead.title ?? ""}
+                  className="w-full h-auto object-cover"
+                />
+              </div>
+              <figcaption className="px-2 py-1 text-[11px] text-muted-foreground text-right">
+                {"Source: Polymarket"}
+              </figcaption>
+            </figure>
           ) : null}
 
           <h1 className="font-headline font-extrabold text-3xl md:text-4xl leading-[1.05] mt-4">
@@ -49,7 +75,11 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
             </Link>
           </h1>
 
-          {lead.description ? <p className="text-base text-muted-foreground mt-3 leading-relaxed line-clamp-3">{lead.description}</p> : null}
+          {lead.description ? (
+            <p className="text-base text-muted-foreground mt-3 leading-relaxed line-clamp-3">
+              {lead.description}
+            </p>
+          ) : null}
 
           {/* bottom two */}
           {m.hero.bottom?.length ? (
@@ -60,6 +90,8 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
                   title={a?.title ?? ""}
                   href={a?.href ?? ""}
                   imageUrl={a?.imageUrl ?? ""}
+                  description={a?.description ?? null}
+                  readTime={a?.endDate ?? null}
                   layout="horizontal"
                   size="small"
                   showImage={true}
@@ -70,10 +102,11 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
         </div>
 
         {/* Right rail list */}
-        <aside className="lg:col-span-3 border-l border-border pl-6">
+        <aside className="lg:col-span-3 border-l border-border pl-6 pt-1">
           <div className="flex items-baseline justify-between mb-3">
             <h3 className="font-bold text-base">Trending</h3>
           </div>
+
           <div className="space-y-0 divide-y divide-border">
             {m.hero.right.map((a, i) => (
               <ArticleCard
@@ -81,9 +114,11 @@ function HeroBlock(m: Extract<LeftModule, { type: "hero" }>) {
                 title={a?.title ?? ""}
                 href={a?.href ?? ""}
                 imageUrl={a?.imageUrl ?? ""}
+                readTime={a?.endDate ?? null}
                 size="small"
-                showImage={false}
                 tone="rail"
+                // ✅ show thumbnail like NYT right rail
+                railThumb={true as any}
               />
             ))}
           </div>
@@ -107,6 +142,7 @@ function TopicBlock(m: Extract<LeftModule, { type: "topic" }>) {
               title={a?.title ?? ""}
               href={a?.href ?? ""}
               imageUrl={a?.imageUrl ?? ""}
+              description={a?.description ?? null}
               readTime={a?.endDate ?? null}
               category={null}
               size="medium"
@@ -123,6 +159,7 @@ function TopicBlock(m: Extract<LeftModule, { type: "topic" }>) {
               href={m.featured?.href ?? ""}
               imageUrl={m.featured?.imageUrl ?? ""}
               description={m.featured?.description ?? null}
+              readTime={m.featured?.endDate ?? null}
               category={null}
               size="large"
               showImage={true}
@@ -138,6 +175,11 @@ function TopicBlock(m: Extract<LeftModule, { type: "topic" }>) {
                       {a?.title ?? ""}
                     </Link>
                   </h4>
+                  {a?.endDate ? (
+                    <span className="text-[11px] text-muted-foreground uppercase tracking-wider mt-2 block">
+                      {a.endDate}
+                    </span>
+                  ) : null}
                 </div>
               ))}
             </div>
@@ -145,17 +187,18 @@ function TopicBlock(m: Extract<LeftModule, { type: "topic" }>) {
         </div>
 
         {/* Right */}
-        <div className="lg:col-span-3 border-l border-border pl-6 space-y-0 divide-y divide-border">
+        <div className="lg:col-span-3 border-l border-border pl-6 pt-1 space-y-0 divide-y divide-border">
           {m.right.map((a, i) => (
             <ArticleCard
               key={a?.id ?? i}
               title={a?.title ?? ""}
               href={a?.href ?? ""}
               imageUrl={a?.imageUrl ?? ""}
+              readTime={a?.endDate ?? null}
               category={null}
               size="small"
-              showImage={false}
               tone="rail"
+              railThumb={true as any}
             />
           ))}
         </div>
@@ -166,10 +209,27 @@ function TopicBlock(m: Extract<LeftModule, { type: "topic" }>) {
 
 function SplitPair(m: Extract<LeftModule, { type: "split" }>) {
   if (!m.left || !m.right) return null;
+
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 gap-6 border-t border-border pt-6">
-      <ArticleCard title={m.left.title ?? ""} href={m.left.href ?? ""} imageUrl={m.left.imageUrl ?? ""} size="medium" showImage={true} />
-      <ArticleCard title={m.right.title ?? ""} href={m.right.href ?? ""} imageUrl={m.right.imageUrl ?? ""} size="medium" showImage={true} />
+      <ArticleCard
+        title={m.left.title ?? ""}
+        href={m.left.href ?? ""}
+        imageUrl={m.left.imageUrl ?? ""}
+        description={m.left.description ?? null}
+        readTime={m.left.endDate ?? null}
+        size="medium"
+        showImage={true}
+      />
+      <ArticleCard
+        title={m.right.title ?? ""}
+        href={m.right.href ?? ""}
+        imageUrl={m.right.imageUrl ?? ""}
+        description={m.right.description ?? null}
+        readTime={m.right.endDate ?? null}
+        size="medium"
+        showImage={true}
+      />
     </section>
   );
 }
@@ -214,12 +274,22 @@ function renderLower(s: LowerSection) {
   if (s.type === "categoryGrid") {
     return <EntertainmentCarousel title={s.title ?? ""} featured={s.featured} items={s.items} />;
   }
+
   return (
     <section className="max-w-[1285px] mx-auto px-4 py-6 border-t border-border">
       <SectionHeader title={s.title ?? ""} links={[]} />
       <div className="space-y-0 divide-y divide-border">
         {s.items.map((a, i) => (
-          <ArticleCard key={a?.id ?? i} title={a?.title ?? ""} href={a?.href ?? ""} imageUrl={a?.imageUrl ?? ""} size="medium" showImage={false} />
+          <ArticleCard
+            key={a?.id ?? i}
+            title={a?.title ?? ""}
+            href={a?.href ?? ""}
+            imageUrl={a?.imageUrl ?? ""}
+            description={a?.description ?? null}
+            readTime={a?.endDate ?? null}
+            size="medium"
+            showImage={false}
+          />
         ))}
       </div>
     </section>
