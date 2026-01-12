@@ -4,7 +4,6 @@ import { MainLayout } from "@/components/layout/rootLayout";
 import { HomeStream } from "@/components/home/homeStream";
 import type { HomeStreamVM } from "@/lib/home/modules";
 import { getBaseUrl } from "@/lib/utils/baseUrl";
-import { marketToCard } from "@/lib/gammaMap";
 
 type Props = { vm: HomeStreamVM };
 
@@ -37,13 +36,14 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
     fetchJson<any>(`${base}/api/polymarket/sections/entertainment`),
   ]);
 
-  const trending = (home.trending ?? []).map((m: any) => marketToCard(m, { category: "Trending" }));
-  const movers = (home.movers ?? []).map((m: any) => marketToCard(m, { category: "Moved (24h)" }));
+  // ✅ These are already CardVM arrays from your API
+  const trending = (home.trending ?? []).filter(Boolean);
+  const movers = (home.movers ?? []).filter(Boolean);
 
-  const geo = (geopolitics.markets ?? []).map((m: any) => marketToCard(m, { category: "Geopolitics" }));
-  const eco = (economy.markets ?? []).map((m: any) => marketToCard(m, { category: "Economy" }));
-  const spo = (sports.markets ?? []).map((m: any) => marketToCard(m, { category: "Sports" }));
-  const ent = (entertainment.markets ?? []).map((m: any) => marketToCard(m, { category: "Entertainment" }));
+  const geo = (geopolitics.markets ?? []).filter(Boolean);
+  const eco = (economy.markets ?? []).filter(Boolean);
+  const spo = (sports.markets ?? []).filter(Boolean);
+  const ent = (entertainment.markets ?? []).filter(Boolean);
 
   const vm: HomeStreamVM = {
     updatedAt: home.updatedAt ?? new Date().toISOString(),
@@ -55,7 +55,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
       {
         type: "hero",
         hero: {
-          lead: movers[0] ?? trending[0],
+          lead: movers[0] ?? trending[0] ?? null,
           left: geo.slice(0, 2),
           right: trending.slice(2, 4),
           bottom: movers.slice(1, 3),
@@ -75,7 +75,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
         right: geo.slice(4, 8),
         bottom: geo.slice(8, 10),
       },
-      { type: "split", left: movers[3] ?? trending[5], right: movers[4] ?? trending[6] },
+      { type: "split", left: movers[3] ?? trending[5] ?? null, right: movers[4] ?? trending[6] ?? null },
       {
         type: "topic",
         title: "Economy",
@@ -107,7 +107,7 @@ export const getStaticProps: GetStaticProps<Props> = async () => {
       {
         type: "categoryGrid",
         title: "Entertainment",
-        featured: ent[0] ?? movers[0],
+        featured: ent[0] ?? movers[0] ?? trending[0] ?? null,
         items: ent.slice(1, 3),
       },
       {

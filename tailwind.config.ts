@@ -1,13 +1,13 @@
-// tailwind.config.ts
 import type { Config } from "tailwindcss";
 
 export default {
+  content: ["./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
       fontFamily: {
-        body: ['Georgia', 'Tinos', '"Liberation Serif"', 'serif'],
-        headline: ['"Playfair Display"', 'Georgia', 'serif'],
-        ui: ['"Libre Franklin"', 'Arial', 'Helvetica', 'sans-serif'],
+        headline: ["var(--font-headline)", "serif"],
+        ui: ["var(--font-ui)", "ui-sans-serif", "system-ui"],
+        body: ["var(--font-body)", "Georgia", "serif"],
       },
     },
   },

@@ -23,11 +23,6 @@ export function SectionBlock({ title, tabs = [], left, featured, right, bottom }
               {a.description ? (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-3">{a.description}</p>
               ) : null}
-              {a.readTime ? (
-                <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
-                  {a.readTime}
-                </span>
-              ) : null}
             </div>
           ))}
         </div>
@@ -57,11 +52,11 @@ export function SectionBlock({ title, tabs = [], left, featured, right, bottom }
                   {featured.description}
                 </p>
               ) : null}
-              {featured.readTime ? (
+              {/* {featured.readTime ? (
                 <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
                   {featured.readTime}
                 </span>
-              ) : null}
+              ) : null} */}
             </>
           ) : null}
 
@@ -74,11 +69,11 @@ export function SectionBlock({ title, tabs = [], left, featured, right, bottom }
                       {a.title}
                     </Link>
                   </h4>
-                  {a.readTime ? (
+                  {/* {a.readTime ? (
                     <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
                       {a.readTime}
                     </span>
-                  ) : null}
+                  ) : null} */}
                 </div>
               ))}
             </div>
@@ -97,11 +92,11 @@ export function SectionBlock({ title, tabs = [], left, featured, right, bottom }
               {a.description ? (
                 <p className="text-sm text-muted-foreground mt-2 leading-relaxed line-clamp-3">{a.description}</p>
               ) : null}
-              {a.readTime ? (
+              {/* {a.readTime ? (
                 <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
                   {a.readTime}
                 </span>
-              ) : null}
+              ) : null} */}
             </div>
           ))}
         </div>

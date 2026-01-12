@@ -20,15 +20,26 @@ export function diversify<T>(
   opts: {
     categoryOf?: (x: T) => string;
     maxPerCategory?: number;
+
+    // alias for older call sites
+    maxPerSection?: number;
+
     keyOf?: (x: T) => string | null | undefined;
+
+    parentOf?: (x: T) => string | null | undefined;
+    maxPerParent?: number;
   } = {}
 ): T[] {
   const categoryOf = opts.categoryOf ?? (() => "all");
-  const maxPerCategory = opts.maxPerCategory ?? Infinity;
+  const maxPerCategory = opts.maxPerCategory ?? opts.maxPerSection ?? Infinity;
   const keyOf = opts.keyOf ?? null;
+
+  const parentOf = opts.parentOf ?? null;
+  const maxPerParent = opts.maxPerParent ?? Infinity;
 
   const out: T[] = [];
   const catCounts = new Map<string, number>();
+  const parentCounts = new Map<string, number>();
   const seen = new Set<string>();
 
   for (const it of items) {
@@ -42,7 +53,16 @@ export function diversify<T>(
       }
     }
 
-    const c = categoryOf(it);
+    if (parentOf) {
+      const p = parentOf(it);
+      if (p) {
+        const pc = parentCounts.get(p) ?? 0;
+        if (pc >= maxPerParent) continue;
+        parentCounts.set(p, pc + 1);
+      }
+    }
+
+    const c = (categoryOf(it) || "all").toLowerCase();
     const cn = catCounts.get(c) ?? 0;
     if (cn >= maxPerCategory) continue;
     catCounts.set(c, cn + 1);

@@ -4,14 +4,11 @@ import type { GammaEvent, GammaMarket, GammaTag } from "./gammaTypes";
 
 const GAMMA_BASE = "https://gamma-api.polymarket.com";
 
-export type FetchOpts = {
-  ttlMs?: number;
-  signal?: AbortSignal;
-};
+export type FetchOpts = { ttlMs?: number; signal?: AbortSignal };
 
 function toQuery(params: Record<string, any>) {
   const sp = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
+  for (const [k, v] of Object.entries(params ?? {})) {
     if (v === undefined || v === null) continue;
     if (Array.isArray(v)) for (const item of v) sp.append(k, String(item));
     else sp.set(k, String(v));
@@ -45,13 +42,19 @@ async function gammaFetch<T>(path: string, params?: Record<string, any>, opts?: 
 export const gamma = {
   events: {
     list: (params: Record<string, any>, opts?: FetchOpts) => gammaFetch<GammaEvent[]>("/events", params, opts),
-    bySlug: (slug: string, opts?: FetchOpts) => gammaFetch<GammaEvent>(`/events/slug/${encodeURIComponent(slug)}`, undefined, opts),
+    bySlug: (slug: string, opts?: FetchOpts) =>
+      gammaFetch<GammaEvent>(`/events/slug/${encodeURIComponent(slug)}`, undefined, opts),
   },
   markets: {
     list: (params: Record<string, any>, opts?: FetchOpts) => gammaFetch<GammaMarket[]>("/markets", params, opts),
-    bySlug: (slug: string, opts?: FetchOpts) => gammaFetch<GammaMarket>(`/markets/slug/${encodeURIComponent(slug)}`, undefined, opts),
+    bySlug: async (slug: string, opts?: FetchOpts) => {
+      const list = await gammaFetch<GammaMarket[]>("/markets", { slug }, opts);
+      const m = Array.isArray(list) ? list[0] : null;
+      if (!m) throw new Error(`market_not_found: ${slug}`);
+      return m;
+    },
   },
   tags: {
-    list: (opts?: FetchOpts) => gammaFetch<GammaTag[]>("/tags", undefined, opts),
+    list: (params?: Record<string, any>, opts?: FetchOpts) => gammaFetch<GammaTag[]>("/tags", params, opts),
   },
 };

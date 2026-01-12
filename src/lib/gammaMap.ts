@@ -1,107 +1,133 @@
 // src/lib/gammaMap.ts
 import type { CardVM } from "@/lib/homeVm";
 import type { GammaEvent, GammaMarket } from "@/lib/polymarket/gammaTypes";
+import { inferBucket } from "@/lib/utils/routing";
 
-const toNum = (x: any): number | null => {
-  if (typeof x === "number" && Number.isFinite(x)) return x;
-  if (typeof x === "string") {
-    const n = Number(x);
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-};
-
-const parseMaybeJsonArray = (x: any): string[] | null => {
-  if (!x) return null;
-  if (Array.isArray(x)) return x.map(String);
-  if (typeof x === "string") {
-    // sometimes outcomePrices is a JSON string like '["0.62","0.38"]'
-    const s = x.trim();
-    if (s.startsWith("[") && s.endsWith("]")) {
-      try {
-        const arr = JSON.parse(s);
-        return Array.isArray(arr) ? arr.map(String) : null;
-      } catch {
-        return null;
-      }
-    }
-    // or a single string (rare) → not useful as array
-    return null;
-  }
-  return null;
+const pickFirstImage = (x: any): string | null => {
+  return x?.image || x?.imageUrl || x?.icon || x?.bannerImage || x?.thumbnail || x?.profileImage || null;
 };
 
 const slugToHref = (slug?: string | null) => (slug ? `/m/${slug}` : "#");
 
-function inferYesNo(outcomes: string[] | null, prices: string[] | null) {
-  if (!outcomes || !prices || outcomes.length !== prices.length) return { pYes: null, pNo: null };
-
-  const idxYes = outcomes.findIndex((o) => String(o).toLowerCase() === "yes");
-  const idxNo = outcomes.findIndex((o) => String(o).toLowerCase() === "no");
-
-  if (idxYes === -1 || idxNo === -1) return { pYes: null, pNo: null };
-
-  const pYes = toNum(prices[idxYes]);
-  const pNo = toNum(prices[idxNo]);
-
-  // sanity clamp
-  const clamp01 = (v: number | null) => (v == null ? null : Math.max(0, Math.min(1, v)));
-  return { pYes: clamp01(pYes), pNo: clamp01(pNo) };
+function numOrNull(x: any): number | null {
+  const n = Number(x);
+  return Number.isFinite(n) ? n : null;
 }
 
-export function marketToCard(m: GammaMarket, opts?: { category?: string; preferHref?: string }): CardVM {
-  const title = m?.question?.trim() || "Untitled market";
-  const href = opts?.preferHref ?? slugToHref(m?.slug);
+function clamp01(x: number) {
+  if (x < 0) return 0;
+  if (x > 1) return 1;
+  return x;
+}
 
-  const outcomes = parseMaybeJsonArray(m?.outcomes);
-  const prices = parseMaybeJsonArray(m?.outcomePrices);
+function parseOutcomePrices(raw: any): number[] | null {
+    try {
+      const arr =
+        typeof raw === "string" ? JSON.parse(raw) :
+        Array.isArray(raw) ? raw :
+        null;
+  
+      if (!Array.isArray(arr) || arr.length < 2) return null;
+  
+      const nums = arr.map((x) => Number(x)).filter((n) => Number.isFinite(n));
+      return nums.length ? nums : null;
+    } catch {
+      return null;
+    }
+  }
+  
+  function parseOutcomes(raw: any): string[] | null {
+    try {
+      const arr =
+        typeof raw === "string" ? JSON.parse(raw) :
+        Array.isArray(raw) ? raw :
+        null;
+  
+      if (!Array.isArray(arr) || arr.length < 2) return null;
+  
+      return arr.map((x) => String(x ?? "").trim()).filter(Boolean);
+    } catch {
+      return null;
+    }
+  }
+  
+  /**
+   * Only return pYes/pNo when outcomes are actually Yes/No.
+   * Otherwise return nulls.
+   */
+  function parseYesNo(m: GammaMarket): { pYes: number | null; pNo: number | null } {
+    const outcomes = parseOutcomes((m as any).outcomes);
+    const prices = parseOutcomePrices((m as any).outcomePrices);
+  
+    if (!outcomes || !prices) return { pYes: null, pNo: null };
+    if (outcomes.length < 2 || prices.length < 2) return { pYes: null, pNo: null };
+  
+    const o0 = outcomes[0].toLowerCase();
+    const o1 = outcomes[1].toLowerCase();
+  
+    // must be exactly yes/no in first two slots
+    const isYesNo = (o0 === "yes" && o1 === "no") || (o0 === "no" && o1 === "yes");
+    if (!isYesNo) return { pYes: null, pNo: null };
+  
+    const p0 = clamp01(Number(prices[0]));
+    const p1 = clamp01(Number(prices[1]));
+  
+    if (o0 === "yes") return { pYes: p0, pNo: p1 };
+    return { pYes: p1, pNo: p0 };
+  }
 
-  const { pYes, pNo } = inferYesNo(outcomes, prices);
 
-  const volume = toNum(m?.volume);
-  const liquidity = toNum(m?.liquidity);
+export function marketToCard(
+  m: GammaMarket,
+  opts?: { section?: string; category?: string; parentId?: string | null; event?: GammaEvent | null }
+): CardVM | null {
+  const slug = m.slug ?? null;
+  const title = (m.question ?? "").trim();
 
-  const oneDayPriceChange = typeof m?.oneDayPriceChange === "number" ? m.oneDayPriceChange : null;
-  const oneDayMoveAbs = oneDayPriceChange == null ? null : Math.abs(oneDayPriceChange);
+  if (!m.id || !slug || !title) return null;
 
-  // Prefer explicit event id if your feed contains it, else conditionId, else null
-  const parentId =
-    (Array.isArray(m?.events) && m.events?.[0]?.id != null ? String(m.events[0].id) : null) ??
-    (m?.conditionId ? String(m.conditionId) : null);
+  const { pYes, pNo } = parseYesNo(m);
+
+  const ev = opts?.event ?? (Array.isArray(m.events) && m.events.length ? m.events[0] : null);
+  const imageUrl = pickFirstImage(m) ?? pickFirstImage(ev);
+
+  const topic = inferBucket(m); // ✅ bucket for sections
 
   return {
     id: String(m.id),
     title,
-    href,
-    description: m?.description ?? null,
+    href: slugToHref(slug),
 
-    imageUrl: m?.image ?? null,
-    iconUrl: m?.icon ?? null,
+    description: m.description ?? null,
+    imageUrl,
+    iconUrl: m.icon ?? ev?.icon ?? null,
+
+    category: opts?.category ?? null,
+    section: opts?.section ?? null,      // where it was used (e.g. "trending")
+    topic,                                // sports/economy/geopolitics/...
+
+    parentId: opts?.parentId ?? (ev?.id ? String(ev.id) : null),
 
     pYes,
     pNo,
 
-    volume24hr: null, // Gamma "Get Markets" doesn’t guarantee 24h volume; keep null unless you compute it elsewhere
-    liquidity,
-
-    oneDayPriceChange,
-    oneDayMoveAbs,
-
-    endDate: m?.endDate ?? null,
-
-    parentId,
-    section: opts?.category ?? null,
+    volume24hr: numOrNull(m.volume24hr ?? m.volumeNum),
+    liquidity: numOrNull(m.liquidityNum ?? m.liquidity),
+    oneDayMoveAbs: m.oneDayPriceChange != null ? Math.abs(Number(m.oneDayPriceChange)) : null,
+    endDate: m.endDateIso ?? m.endDate ?? null,
   };
 }
 
-export function eventToFeatured(event: GammaEvent) {
-  const title = event?.title || event?.slug || "Featured";
-  const href = event?.slug ? `/e/${event.slug}` : "#";
-
-  return {
-    title,
-    href,
-    imageUrl: event?.image ?? event?.icon ?? null,
-    imageCaption: undefined,
-  };
+export function eventToCards(e: GammaEvent, opts?: { section?: string; category?: string }): CardVM[] {
+  const markets = Array.isArray(e.markets) ? e.markets : [];
+  return markets
+    .map((m) =>
+      marketToCard(m, {
+        section: opts?.section,
+        category: opts?.category,
+        parentId: e.id ? String(e.id) : null,
+        event: e,
+      })
+    )
+    .filter((c): c is CardVM => Boolean(c && c.id && c.title && c.href));
 }

@@ -1,28 +1,33 @@
+// src/lib/homeVm.ts
 export type ReadTime = string; // e.g. "4 MIN READ"
 
 export type CardVM = {
-    id: string;                 // stable key (market id)
-    title: string;              // market.question (or event.title fallback)
-    href: string;               // `/m/${slug}`
-    image?: string | null;
-    icon?: string | null;
-  
-    // odds
-    pYes?: number | null;       // 0..1 for Yes/No markets
-    pNo?: number | null;
-  
-    // ranking / display
-    volume24hr?: number | null;
-    liquidity?: number | null;
-    oneDayPriceChange?: number | null;
-    endDate?: string | null;
-  
-    // clustering
-    parentId?: string | null;   // event id if present
-    section?: string;           // "sports" | "politics" | ...
-    topic?: string;             // optional
-  };
-  
+  id: string; // stable key (market id)
+  title: string;
+  href: string;
+
+  // ✅ what your UI actually uses
+  description?: string | null;
+  imageUrl?: string | null;
+  iconUrl?: string | null;
+  category?: string | null;
+
+  // odds
+  pYes?: number | null; // 0..1 for Yes/No markets
+  pNo?: number | null;
+
+  // ranking / display
+  volume24hr?: number | null;
+  liquidity?: number | null;
+  oneDayMoveAbs?: number | null;
+  endDate?: string | null;
+
+  // clustering
+  parentId?: string | null; // event id if present
+  section?: string | null;  // "sports" | "politics" | ...
+  topic?: string | null;
+};
+
 export type HeroVM = {
   left: CardVM[];
   right: CardVM[];
@@ -34,7 +39,7 @@ export type HeroVM = {
     imageCaption?: string;
     locationLabel?: string;
     dateLabel?: string;
-    transcriptTag?: string; // "[explosions]" style
+    transcriptTag?: string;
     byline?: string;
   };
 };

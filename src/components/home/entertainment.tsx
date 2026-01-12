@@ -27,15 +27,15 @@ export function EntertainmentCarousel({ title, featured, items }: Props) {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Featured */}
         <div className="lg:col-span-6">
-          {featured.image ? <Img src={featured.image} alt={featured.title} className="w-full aspect-[4/3]" /> : null}
+          {featured?.imageUrl ? <Img src={featured.imageUrl} alt={featured.title} className="w-full aspect-[4/3]" /> : null}
 
           <h3 className="font-headline font-bold text-xl md:text-2xl leading-tight mt-4 line-clamp-3">
-            <Link href={featured.href} className="hover:underline">
-              {featured.title}
+            <Link href={featured?.href ?? ""} className="hover:underline">
+              {featured?.title ?? ""}
             </Link>
           </h3>
 
-          {featured.endDate ? (
+          {featured?.endDate ? (
             <span className="text-xs text-muted-foreground uppercase tracking-wider mt-2 block line-clamp-1">
               Ends {new Date(featured.endDate).toLocaleDateString()}
             </span>
@@ -46,12 +46,12 @@ export function EntertainmentCarousel({ title, featured, items }: Props) {
         <div className="lg:col-span-6">
           <div className="grid grid-cols-2 gap-4">
             {items.map((a, i) => (
-              <div key={a.id ?? i}>
-                {a.image ? <Img src={a.image} alt={a.title} className="w-full aspect-[4/3]" /> : null}
+              <div key={a?.id ?? i}>
+                {a?.imageUrl ? <Img src={a.imageUrl} alt={a.title} className="w-full aspect-[4/3]" /> : null}
 
                 <h4 className="font-headline font-bold text-base leading-tight mt-3 line-clamp-3">
-                  <Link href={a.href} className="hover:underline">
-                    {a.title}
+                  <Link href={a?.href ?? ""} className="hover:underline">
+                    {a?.title ?? ""}
                   </Link>
                 </h4>
               </div>
